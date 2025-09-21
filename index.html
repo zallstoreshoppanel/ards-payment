@@ -1,0 +1,280 @@
+<!doctype html>
+
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Payment Panel — QRIS, DANA, GOPAY, Bank Jago, Sea Bank</title>
+  <style>
+    /* Reset & base */
+    :root{
+      --bg:#0f1724; --card:#0b1220; --glass: rgba(255,255,255,0.04);
+      --accent: linear-gradient(135deg,#6ee7b7,#3b82f6);
+      --glass-2: rgba(255,255,255,0.03);
+      --glass-3: rgba(255,255,255,0.02);
+      --text:#e6eef8;
+      --muted:#9fb0c8;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:var(--text);background:radial-gradient(1200px 600px at 10% 10%, rgba(59,130,246,0.06), transparent), radial-gradient(800px 400px at 90% 90%, rgba(110,231,183,0.03), transparent), linear-gradient(180deg,#071026 0%, #071422 100%);}.container{max-width:1100px;margin:48px auto;padding:24px;}
+
+header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+header .logo{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0ea5a3,#7c3aed);box-shadow:0 10px 30px rgba(2,6,23,0.6);transform:rotate(-10deg);}
+h1{font-size:20px;margin:0}
+p.lead{margin:0;color:var(--muted);font-size:13px}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:20px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+
+/* Card 3D effect */
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:16px;padding:18px;position:relative;overflow:visible;backdrop-filter: blur(6px);box-shadow:0 8px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);transform-style:preserve-3d;transition:transform 300ms cubic-bezier(.2,.9,.2,1);cursor:default}
+.card:hover{transform: translateY(-8px) rotateX(6deg);}    
+
+.top{display:flex;gap:12px;align-items:center}
+.app-icon{width:62px;height:62px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow: 0 8px 20px rgba(2,6,23,0.5);overflow:hidden;background:linear-gradient(135deg, rgba(255,255,255,0.02), transparent)}
+.app-icon img{width:44px;height:44px;object-fit:contain}
+.meta{flex:1}
+.meta h3{margin:0;font-size:16px}
+.meta .sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+.body{margin-top:14px}
+.qr-thumb{width:100%;max-height:200px;object-fit:contain;border-radius:10px;background:var(--glass-3);display:block;box-shadow: 0 6px 18px rgba(2,6,23,0.5);}
+
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;background:var(--glass);margin-top:10px}
+.info-left{min-width:0}
+.label{font-size:12px;color:var(--muted)}
+.value{font-size:14px;word-break:break-all}
+
+.btns{display:flex;gap:8px;margin-top:12px}
+.btn{padding:8px 12px;border-radius:10px;border:0;background:transparent;color:var(--text);cursor:pointer;font-weight:600;box-shadow: 0 6px 18px rgba(2,6,23,0.35);}
+.btn.copy{background:linear-gradient(90deg,#111827,#0b1220);border:1px solid rgba(255,255,255,0.03)}
+.btn.primary{background:var(--accent);color:#04263a;border:0}
+
+/* small copy tooltip */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;background:#0b1220;padding:10px 14px;border-radius:10px;color:var(--text);box-shadow:0 8px 30px rgba(2,6,23,0.6);opacity:0;pointer-events:none;transition:opacity 220ms,transform 220ms}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);pointer-events:auto}
+
+/* modal zoom */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:60;opacity:0;pointer-events:none;transition:opacity 220ms}
+.modal.show{opacity:1;pointer-events:auto}
+.modal .modal-card{max-width:920px;width:92%;border-radius:14px;padding:18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 30px 60px rgba(2,6,23,0.7)}
+.modal img{width:100%;height:auto;border-radius:8px;display:block}
+.close-x{position:absolute;top:18px;right:20px;background:transparent;border:0;color:var(--text);font-size:22px}
+
+footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+
+/* small helper for 3D tilt effect using mouse */
+.tilt-area{transform-style:preserve-3d}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">💳</div>
+      <div>
+        <h1>Payment Panel — QRIS & E-Wallets</h1>
+        <p class="lead">Klik untuk memperbesar QRIS. Nomor/ID dapat disalin,<em></p>
+      </div>
+    </header><main class="grid">
+
+  <!-- QRIS -->
+  <div class="card tilt-area" data-type="qris">
+    <div class="top">
+      <div class="app-icon"><img src="https://img.icons8.com/fluency/48/000000/qr-code.png" alt="QRIS logo" /></div>
+      <div class="meta">
+        <h3>QRIS</h3>
+        <div class="sub">Scan QR untuk bayar</div>
+      </div>
+    </div>
+    <div class="body">
+      <!-- replace the src with your QRIS image URL -->
+      <img class="qr-thumb" id="qrisImg" src="https://files.catbox.moe/vqfiyj.png" alt="QRIS" data-full="https://files.catbox.moe/vqfiyj.png">
+
+      <div class="info-row" style="margin-top:12px">
+        <div class="info-left">
+          <div class="label">Deskripsi</div>
+          <div class="value">QRIS - Scan via bank / e-wallet</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn primary" data-zoom="qrisImg">Perbesar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DANA -->
+  <div class="card tilt-area" data-type="dana">
+    <div class="top">
+      <div class="app-icon"><img src="https://img.icons8.com/fluency/48/000000/wallet.png" alt="DANA logo" /></div>
+      <div class="meta">
+        <h3>DANA</h3>
+        <div class="sub">Dompet digital — transfer cepat</div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="info-row">
+        <div class="info-left">
+          <div class="label">Atas Nama</div>
+          <div class="value" id="danaName">MUHAMAD RIZAL</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div class="label">ID / Nomor</div>
+          <div class="value" id="danaAcc">083821914043</div>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="btn copy" data-copy-target="#danaAcc">Salin Nomor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOPAY -->
+  <div class="card tilt-area" data-type="gopay">
+    <div class="top">
+      <div class="app-icon"><img src="https://img.icons8.com/fluency/48/000000/mobile-pay.png" alt="GoPay logo" /></div>
+      <div class="meta">
+        <h3>GOPAY</h3>
+        <div class="sub">Bayar lewat GoPay</div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="info-row">
+        <div class="info-left">
+          <div class="label">Atas Nama</div>
+          <div class="value" id="gopayName">MUHAMAD RIZAL</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div class="label">ID / Nomor</div>
+          <div class="value" id="gopayAcc">083821914043</div>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="btn copy" data-copy-target="#gopayAcc">Salin Nomor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bank Jago -->
+  <div class="card tilt-area" data-type="jago">
+    <div class="top">
+      <div class="app-icon"><img src="https://img.icons8.com/fluency/48/000000/bank.png" alt="Bank Jago logo" /></div>
+      <div class="meta">
+        <h3>Bank Jago</h3>
+        <div class="sub">Transfer antar bank</div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="info-row">
+        <div class="info-left">
+          <div class="label">Atas Nama</div>
+          <div class="value" id="jagoName">MUHAMAD RIZAL</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div class="label">No. Rek</div>
+          <div class="value" id="jagoAcc">103805478268</div>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="btn copy" data-copy-target="#jagoAcc">Salin Rek</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sea Bank -->
+  <div class="card tilt-area" data-type="sea">
+    <div class="top">
+      <div class="app-icon"><img src="https://img.icons8.com/fluency/48/000000/money-transfer.png" alt="Sea Bank logo" /></div>
+      <div class="meta">
+        <h3>Sea Bank</h3>
+        <div class="sub">Transfer & top up</div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="info-row">
+        <div class="info-left">
+          <div class="label">Atas Nama</div>
+          <div class="value" id="seaName">MUHAMAD RIZAL</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div class="label">No. Rek</div>
+          <div class="value" id="seaAcc">901273641785</div>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="btn copy" data-copy-target="#seaAcc">Salin Rek</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  PAYMENT BY ARDS
+</footer>
+
+  </div>  <!-- Modal for image zoom -->  <div class="modal" id="modal">
+    <div class="modal-card">
+      <button class="close-x" id="modalClose">✕</button>
+      <img id="modalImg" src="" alt="Zoomed">
+    </div>
+  </div>  <div class="toast" id="toast">Tersalin ke clipboard</div>  <script>
+    // Copy helper
+    function showToast(text){
+      const t = document.getElementById('toast');
+      t.textContent = text || 'Tersalin ke clipboard';
+      t.classList.add('show');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(()=>t.classList.remove('show'),1600);
+    }
+
+    document.addEventListener('click', e => {
+      const copyBtn = e.target.closest('[data-copy-target]');
+      if(copyBtn){
+        const el = document.querySelector(copyBtn.dataset.copyTarget);
+        if(el){
+          navigator.clipboard.writeText(el.textContent.trim()).then(()=> showToast('Teks disalin'));
+        }
+      }
+
+      // zoom button
+      const z = e.target.closest('[data-zoom]');
+      if(z){
+        const id = z.dataset.zoom;
+        const img = document.getElementById(id);
+        if(img){ openModal(img.dataset.full || img.src); }
+      }
+
+      // clicking image itself
+      if(e.target.classList.contains('qr-thumb')){
+        openModal(e.target.dataset.full || e.target.src);
+      }
+    });
+
+    // Modal functions
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const modalClose = document.getElementById('modalClose');
+    function openModal(src){ modalImg.src = src; modal.classList.add('show'); }
+    function closeModal(){ modal.classList.remove('show'); modalImg.src = ''; }
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+
+    // small 3D pointer tilt on each card
+    document.querySelectorAll('.tilt-area').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left; // x position within element
+        const y = e.clientY - rect.top;
+        const cx = rect.width/2, cy = rect.height/2;
+        const rx = (y - cy) / cy; const ry = (x - cx) / cx;
+        card.style.transform = `perspective(900px) rotateX(${rx * 6}deg) rotateY(${ry * -8}deg) translateZ(6px)`;
+      });
+      card.addEventListener('mouseleave', ()=>{ card.style.transform = ''; });
+    });
+
+    // Accessibility: keyboard close modal
+    document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeModal(); });
+  </script></body>
+</html>
